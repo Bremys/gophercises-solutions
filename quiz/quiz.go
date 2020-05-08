@@ -4,37 +4,18 @@ import (
 	"bufio"
 	"encoding/csv"
 	"fmt"
-	"io"
 	"log"
+	"math/rand"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/urfave/cli/v2"
 )
 
-func main() {
-	app := &cli.App{
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:    "csv",
-				Aliases: []string{"c"},
-				Usage:   "Load csv from `FILE`",
-				Value:   "problems.csv",
-			},
-		},
-		Action: mainAction,
-	}
-
-	err := app.Run(os.Args)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-}
-
-func mainAction(c *cli.Context) error {
+func Quiz(c *cli.Context) error {
 	csvPath := c.String("csv")
-	fmt.Println(csvPath)
+	shuffle := c.Bool("shuffle")
 
 	csvFile, err := os.Open(csvPath)
 	if err != nil {
@@ -43,32 +24,38 @@ func mainAction(c *cli.Context) error {
 
 	content := csv.NewReader(csvFile)
 	userInput := bufio.NewReader(os.Stdin)
-	correctAmount, size := 0, 0
 
-	for {
-		// Read each record from csv
-		record, err := content.Read()
-		if err == io.EOF {
-			break
-		}
+	records, err := content.ReadAll()
 
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if HandleSingleQuizLine(record, userInput) {
-			correctAmount++
-		}
-		size++
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	fmt.Printf("Got %d correct out of %d\n", correctAmount, size)
+	if shuffle {
+		shuffleRecords(records)
+	}
+
+	correctAmount := 0
+
+	for _, record := range records {
+		fmt.Printf("%s=", record[0])
+		if equalAnswers(record[1], userInput) {
+			correctAmount++
+		}
+	}
+
+	fmt.Printf("Got %d correct out of %d\n", correctAmount, len(records))
 	return nil
 }
 
-func HandleSingleQuizLine(record []string, userInput *bufio.Reader) bool {
-	fmt.Printf("%s=", record[0])
-	answer, _ := userInput.ReadString('\n')
-	answer = strings.TrimSpace(answer)
-	return answer == record[1]
+func shuffleRecords(records [][]string) {
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(records), func(i, j int) { records[i], records[j] = records[j], records[i] })
+}
+
+func equalAnswers(csvAnswer string, userInput *bufio.Reader) bool {
+	userAnswer, _ := userInput.ReadString('\n')
+	userAnswer = strings.ToLower(strings.TrimSpace(userAnswer))
+	correctAnswer := strings.ToLower(strings.TrimSpace(csvAnswer))
+	return userAnswer == correctAnswer
 }
