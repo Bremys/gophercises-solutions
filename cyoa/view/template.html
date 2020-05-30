@@ -8,8 +8,15 @@
 </head>
 
 <body>
-    I am a <b>{{ .Adjective }}</b> {{ .Gender }}
-    {{ .AdjLength }}
+    <h1>{{.Title}}</h1>
+    {{range $story := .Story }}
+    <p>{{$story}}</p>
+    {{end}}
+    <ul>
+        {{range $option := .Options}}
+        <li><a href="/{{$option.Arc}}">{{$option.Text}}</a></li>
+        {{end}}
+    </ul>
 </body>
 
 </html>

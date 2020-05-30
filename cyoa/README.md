@@ -1,17 +1,8 @@
 ### Choose Your Own Adventure
 
-##### TODO:
+A program for running a CYOA page as described in [gophercises/cyoa](https://github.com/gophercises/cyoa) 
 
-###### 	HTTP:
+[parser.go](parser.go) contains the code modeling and
+parsing the JSON file.
 
-- [x] Create dummy `http.Handler` server that returns a static page
-- [x] Make it a bit more dynamic using `html/template`
-
-######  JSON:
-
-- [ ] Model the JSON structure of [gopher.json](gopher.json) as Go structs
-- [ ] Create a parse function, transform a JSON file to a Go object using `encoding/json`
-
-######  Merge:
-
-Use the resulting Go object in creating the dynamic html page.
+[app.go](app.go) contains the code for running the HTTP server while [view/template](view/template.html) defines the way it is displayed.
